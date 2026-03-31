@@ -1,66 +1,49 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="page-container">
+      <div className="home-container">
+        {/* Floating decorative orb */}
+        <div className="hero-orb" aria-hidden="true"></div>
+
+        {/* Logo + Title */}
+        <div className="hero-badge">🩺</div>
+        <h1 className="home-title">Doc-Help</h1>
+        <p className="home-subtitle">
+          Secure digital prescriptions — created by doctors, accessed by
+          patients with a one-time code.
+        </p>
+
+        {/* Role selection cards */}
+        <div className="home-cards">
+          <Link href="/doctor" className="role-card" id="card-doctor">
+            <span className="role-icon">👨‍⚕️</span>
+            <h2 className="role-title">Doctor</h2>
+            <p className="role-desc">
+              Create prescriptions using text or voice input with AI assistance.
+            </p>
+            <span className="card-arrow">→</span>
+          </Link>
+
+          <Link href="/patient" className="role-card" id="card-patient">
+            <span className="role-icon">🧑‍💼</span>
+            <h2 className="role-title">Patient</h2>
+            <p className="role-desc">
+              Retrieve your prescription using the access code from your doctor.
+            </p>
+            <span className="card-arrow">→</span>
+          </Link>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        {/* Footer tagline */}
+        <p className="home-footer">
+          <span className="footer-dot"></span>
+          End-to-end encrypted &nbsp;·&nbsp; Codes expire in 10 minutes
+        </p>
+      </div>
     </div>
   );
 }
