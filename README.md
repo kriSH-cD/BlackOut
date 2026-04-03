@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🩺 Clinical Sanctuary — Digital Prescription Frontend
 
-## Getting Started
+A modern, high-precision healthcare interface for doctors and patients. Built with **Next.js**, **Groq AI**, and high-end **Glassmorphism** styling.
 
-First, run the development server:
+---
 
+## ✨ Features
+
+### 👨‍⚕️ For Doctors
+- **Obsidian Dashboard:** A premium, dark-themed interface designed for clinical efficiency.
+- **AI Voice-to-Prescription:** Powered by **Groq Llama 3.1**, allowing doctors to speak consultation details and have them automatically structured into clinical data.
+- **Secure Code Generation:** Generates a unique 6-character access code for every prescription.
+- **Clinical Form Grains:** Structured fields for symptoms, diagnosis, medications, and follow-up plans.
+
+### 🛌 For Patients
+- **Effortless Retrieval:** Patients simply enter their phone number and the 6-character code to view their prescription instantly.
+- **Glassmorphic UI:** A clean, responsive, and trustworthy design for viewing medical documents.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js (App Router)
+- **AI Processing:** Groq SDK (Llama 3.1 8B)
+- **Styling:** CSS Modules with Glassmorphic Design & Vibrance
+- **Icons:** Google Material Symbols
+- **State Management:** React Hooks (useEffect, useState, useRef)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd frontend
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Setup
+Create a `.env.local` file in the root of the `frontend` folder:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_GROQ_API_KEY=your_groq_api_key_here
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 3. Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📁 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+frontend/
+├── app/
+│   ├── doctor/         # Physician Dashboard
+│   ├── patient/        # Patient Access Portal
+│   ├── layout.js       # Root Layout & Theme Configuration
+│   └── globals.css     # Design System & UI Utils
+├── lib/
+│   ├── api.js          # Fastapi Backend Connectors
+│   └── groq.js         # AI Logic & Structuring
+└── public/             # Static Assets
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛡️ Security Check
+- **No Private Data Stored Locally:** All prescriptions are persisted via the secure FastAPI backend and Supabase.
+- **Environment Safety:** API keys are server-side or prefix-restricted.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🏛️ License
+Part of the **Doc-Help** Digital Ecosystem. © 2024.
