@@ -1,35 +1,20 @@
-"use client";
+'use client';
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { createPrescription } from "@/lib/api";
-import { processWithGroq } from "@/lib/groq";
+import { createPrescription, transcribeAudio } from "@/lib/api";
+import { processWithAI } from "@/lib/ai";
 
 export default function DoctorDashboard() {
-  // --- Theme State ---
-  const [theme, setTheme] = useState("dark"); // Defaulting to dark (Obsidian) as requested previously
-
-  useEffect(() => {
-    document.documentElement.className = theme;
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => (prev === "dark" ? "light" : "dark"));
-  };
-
-  // --- Form & UI State ---
   const [doctorInfo, setDoctorInfo] = useState({
-    name: "Dr. Julianne Moore",
-    qualification: "MD, Cardiology",
-    regNo: "MC-29401",
-    clinic: "Sanctuary Medical Center, Wing B",
+    name: "Dr. Elena Mirren",
+    qualification: "MBBS, MD",
+    regNo: "MC-22340-A",
+    clinic: "Serenity Integrated Care Clinic",
   });
 
   const [patientInfo, setPatientInfo] = useState({
     name: "",
-    age: "",
-    gender: "Male",
-    date: new Date().toISOString().split("T")[0],
     phone: "",
   });
 
@@ -38,12 +23,12 @@ export default function DoctorDashboard() {
     diagnosis: "",
     tests: "",
     advice: "",
-    followUpDate: "",
-    followUpInstructions: "",
+    nextVisit: "",
+    reviewNotes: "",
   });
 
   const [medicines, setMedicines] = useState([
-    { name: "Amoxicillin 500mg", dosage: "1 Cap", frequency: "TDS (3x/day)", duration: "7 Days", instructions: "After Food" },
+    { name: "Paracetamol 500mg", dosage: "1-0-1", frequency: "TDS", duration: "5 Days", instructions: "After Food" },
   ]);
 
   const [prescriptionCode, setPrescriptionCode] = useState("");
@@ -52,74 +37,76 @@ export default function DoctorDashboard() {
   const [transcription, setTranscription] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const chunksRef = useRef([]);
 
-  // --- Speech Recognition Setup ---
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = true;
-        recognitionRef.current.interimResults = true;
-
-        recognitionRef.current.onresult = (event) => {
-          let interimTranscript = "";
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-              setTranscription((prev) => prev + event.results[i][0].transcript + " ");
-            } else {
-              interimTranscript += event.results[i][0].transcript;
-            }
-          }
-        };
-
-        recognitionRef.current.onerror = (event) => {
-          console.error("Speech recognition error", event.error);
-          setIsRecording(false);
-        };
-      }
-    }
-  }, []);
-
-  const toggleRecording = () => {
+  const toggleRecording = async () => {
     if (isRecording) {
-      recognitionRef.current.stop();
+      mediaRecorderRef.current.stop();
       setIsRecording(false);
-      handleTranscriptProcessing();
     } else {
-      setTranscription("");
-      recognitionRef.current.start();
-      setIsRecording(true);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        chunksRef.current = [];
+
+        mediaRecorderRef.current.ondataavailable = (e) => {
+          if (e.data.size > 0) chunksRef.current.push(e.data);
+        };
+
+        mediaRecorderRef.current.onstop = async () => {
+          const audioBlob = new Blob(chunksRef.current, { type: 'audio/wav' });
+          setIsProcessing(true);
+          try {
+            const result = await transcribeAudio(audioBlob);
+            if (result && result.text) {
+              setTranscription(result.text);
+              // Auto-process with Groq directly after transcription
+              await handleTranscriptProcessing(result.text);
+            }
+          } catch (err) {
+            console.error("Transcription failed", err);
+            alert("Transcription failed. Please try again.");
+          } finally {
+            setIsProcessing(false);
+          }
+          
+          // Stop all tracks to release the microphone
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorderRef.current.start();
+        setIsRecording(true);
+      } catch (err) {
+        console.error("Error accessing microphone", err);
+        alert("Could not access microphone.");
+      }
     }
   };
 
-  const handleTranscriptProcessing = async () => {
-    if (!transcription.trim()) return;
+  const handleTranscriptProcessing = async (textToProcess) => {
+    const text = textToProcess || transcription;
+    if (!text.trim()) return;
     setIsProcessing(true);
     try {
-      const structuredData = await processWithGroq(transcription);
+      const structuredData = await processWithAI(text);
       if (structuredData) {
-        if (structuredData.patient) {
-          setPatientInfo(prev => ({ 
-            ...prev, 
-            name: structuredData.patient.name || prev.name,
-            age: structuredData.patient.age || prev.age,
-            gender: structuredData.patient.gender || prev.gender,
-            phone: structuredData.patient.phone || prev.phone
-          }));
-        }
         setClinicalNotes(prev => ({
           ...prev,
-          symptoms: structuredData.symptoms || prev.symptoms,
-          diagnosis: structuredData.diagnosis || prev.diagnosis,
-          tests: Array.isArray(structuredData.tests) ? structuredData.tests.join(", ") : (structuredData.tests || prev.tests),
-          advice: structuredData.advice || prev.advice,
-          followUpDate: structuredData.followUp?.date || prev.followUpDate,
-          followUpInstructions: structuredData.followUp?.instructions || prev.followUpInstructions
+          symptoms: structuredData.clinical_presentation?.symptoms || prev.symptoms,
+          diagnosis: structuredData.clinical_presentation?.primary_diagnosis || prev.diagnosis,
+          tests: Array.isArray(structuredData.recommended_tests) ? structuredData.recommended_tests.join(", ") : (structuredData.recommended_tests || prev.tests),
+          advice: structuredData.lifestyle_advice || prev.advice,
         }));
-        if (structuredData.medicines && Array.isArray(structuredData.medicines)) {
-          setMedicines(structuredData.medicines.length > 0 ? structuredData.medicines : medicines);
+        if (structuredData.pharmacological_treatment && Array.isArray(structuredData.pharmacological_treatment)) {
+          const mappedMeds = structuredData.pharmacological_treatment.map(m => ({
+            name: m.medicine_name || "",
+            dosage: m.frequency || "", // Mapped to the Freq. input field
+            frequency: "",
+            duration: m.duration || "",
+            instructions: m.instructions || ""
+          }));
+          setMedicines(mappedMeds.length > 0 ? mappedMeds : medicines);
         }
       }
     } catch (error) {
@@ -144,40 +131,29 @@ export default function DoctorDashboard() {
   };
 
   const handleCreatePrescription = async () => {
-    if (!patientInfo.phone || patientInfo.phone.replace(/[^0-9]/g, "").length < 10) {
-      alert("A valid 10-digit patient contact number is required for code-based retrieval.");
-      return;
-    }
-
-    if (medicines.every(m => !m.name)) {
-      alert("Please add at least one medication to the prescription.");
+    if (!patientInfo.phone || patientInfo.phone.replace(/\D/g, "").length < 10) {
+      alert("A valid 10-digit patient contact number is required.");
       return;
     }
 
     setIsProcessing(true);
     try {
-      // Serialize medicine array into a clinical string for the backend
       const medsString = medicines
         .filter(m => m.name.trim() !== "")
         .map(m => `${m.name} (${m.dosage}, ${m.frequency}, ${m.duration})`)
         .join("; ");
 
-      // Construct the comprehensive clinical report
       const fullReport = `
 SYMPTOMS: ${clinicalNotes.symptoms || "N/A"}
 DIAGNOSIS: ${clinicalNotes.diagnosis || "N/A"}
 TESTS: ${clinicalNotes.tests || "N/A"}
 ADVICE: ${clinicalNotes.advice || "N/A"}
-FOLLOW-UP: ${clinicalNotes.followUpDate || "Not scheduled"} - ${clinicalNotes.followUpInstructions || "No additional instructions"}
+FOLLOW-UP: ${clinicalNotes.nextVisit || "Not scheduled"} - ${clinicalNotes.reviewNotes || ""}
       `.trim();
 
-      // Canonicalize phone number (digits only) for reliable lookup
       const canonicalPhone = patientInfo.phone.replace(/\D/g, "");
-
-      // Fix: API expects (phone, medicines, reportText) as separate arguments
       const result = await createPrescription(canonicalPhone, medsString, fullReport);
       
-      // Fix: Backend returns 'access_code', not 'code'
       if (result && result.access_code) {
         setPrescriptionCode(result.access_code);
         alert("✅ Prescription generated successfully!");
@@ -190,12 +166,23 @@ FOLLOW-UP: ${clinicalNotes.followUpDate || "Not scheduled"} - ${clinicalNotes.fo
     }
   };
 
-  const resetForm = () => {
-    if (confirm("Clear all active clinical data for a new patient?")) {
-      setPatientInfo({ name: "", age: "", gender: "Male", date: new Date().toISOString().split("T")[0], phone: "" });
-      setClinicalNotes({ symptoms: "", diagnosis: "", tests: "", advice: "", followUpDate: "", followUpInstructions: "" });
-      setMedicines([{ name: "", dosage: "", frequency: "", duration: "", instructions: "" }]);
-      setPrescriptionCode("");
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    try {
+      const result = await transcribeAudio(file);
+      if (result && result.text) {
+        setTranscription(result.text);
+        await handleTranscriptProcessing(result.text);
+        alert("✅ File transcribed and processed successfully!");
+      }
+    } catch (err) {
+      console.error("File transcription failed", err);
+      alert("Error processing audio file. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -206,255 +193,232 @@ FOLLOW-UP: ${clinicalNotes.followUpDate || "Not scheduled"} - ${clinicalNotes.fo
   };
 
   return (
-    <div className="min-h-screen">
-      {/* --- Navigation Bar (Stitch Exact) --- */}
-      <nav className="st-nav">
-        <div className="flex justify-between items-center w-full px-6 py-3 max-w-1280 mx-auto">
-          <div className="flex items-center gap-8">
-            <span className="text-lg font-bold tracking-tight font-headline" style={{ color: 'var(--color-primary)' }}>
-              Clinical Sanctuary
+    <div className="dr-bg">
+      {/* Top Navigation */}
+      <header className="dr-header">
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--dr-primary)', letterSpacing: '-0.02em' }}>
+              Tonal Serenity
             </span>
-            <div className="hidden md:flex items-center gap-6">
-              <Link href="/" className="nav-link" style={{ fontSize: '0.75rem' }}>Portal Home</Link>
-              <a className="font-body text-xs font-semibold" style={{ color: 'var(--color-primary)', borderBottom: '2px solid var(--color-primary)', paddingBottom: '2px' }} href="#">Dashboard</a>
-              <a className="nav-link" style={{ fontSize: '0.75rem' }} href="#">Patient Records</a>
+            <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--dr-outline-variant)', opacity: 0.3 }} />
+            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--dr-surface-container-low)', padding: '0.5rem 1.25rem', borderRadius: '99px', gap: '0.75rem' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--dr-outline)' }}>search</span>
+              <input type="text" placeholder="Find patient record..." style={{ background: 'transparent', border: 'none', outline: 'none', fontSize: '0.85rem', width: '200px' }} />
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="material-symbols-outlined nav-icon-btn" style={{ fontSize: '20px' }}>notifications</button>
-            <button className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.75rem' }} onClick={resetForm}>
-              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>refresh</span>
-              Reset Form
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button className="material-symbols-outlined" style={{ color: 'var(--dr-on-surface-variant)', background: 'transparent', border: 'none', cursor: 'pointer' }}>mic</button>
+            <button className="material-symbols-outlined" style={{ color: 'var(--dr-on-surface-variant)', background: 'transparent', border: 'none', cursor: 'pointer', position: 'relative' }}>
+              notifications
+              <span style={{ position: 'absolute', top: 0, right: 0, width: '8px', height: '8px', backgroundColor: 'var(--dr-error)', borderRadius: '50%', border: '2px solid white' }} />
             </button>
+            <button className="material-symbols-outlined" style={{ color: 'var(--dr-on-surface-variant)', background: 'transparent', border: 'none', cursor: 'pointer' }}>settings</button>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--dr-outline-variant)', overflow: 'hidden', marginLeft: '0.5rem' }}>
+              <img src="/api/placeholder/40/40" alt="Doctor" style={{ width: '100%', height: '100%', objectCover: 'cover' }} />
+            </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* --- Main Dashboard --- */}
-      <main className="st-container max-w-1280 mx-auto px-6 py-8">
-        <header style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h1 className="text-4xl font-extrabold font-headline tracking-tight" style={{ color: 'var(--on-surface)' }}>
-            Precision Prescription Engine
-          </h1>
-          <p style={{ color: 'var(--on-surface-variant)', maxWidth: '600px', margin: '1rem auto' }}>
-            Leverage voice-to-text intelligence to generate structured clinical documents with sanctuary-level clarity.
-          </p>
-        </header>
-
-        {/* --- AI Voice Assistant Section --- */}
-        <section className="st-section-low">
-          <div className="mic-btn-wrap">
-            <button className={`mic-btn ${isRecording ? 'listening' : ''}`} onClick={toggleRecording}>
-              <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>{isRecording ? 'mic_off' : 'mic'}</span>
-            </button>
-            <div style={{ flex: 1 }}>
-              <p className="form-label" style={{ marginBottom: '4px' }}>Real-time Transcription</p>
-              <div className="chat-messages" style={{ height: 'auto', minHeight: '80px' }}>
-                {transcription || "Listening for consultation details..."}
-                {isProcessing && <div className="chat-message bot">Processing with AI...</div>}
+      <main style={{ maxWidth: '900px', margin: '0 auto', padding: '4rem 2rem 8rem' }}>
+        {/* Section 1: Voice Input & File Upload */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+          <section className="dr-card" style={{ marginBottom: 0 }}>
+            <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                <button className={`dr-btn-mic ${isRecording ? 'active' : ''}`} onClick={toggleRecording}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '40px' }}>mic</span>
+                </button>
+                {isRecording && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--dr-primary)', fontWeight: 700, fontSize: '0.85rem' }}>
+                    <div style={{ width: '8px', height: '8px', backgroundColor: 'var(--dr-primary)', borderRadius: '50%', animation: 'lp-pulse 1s infinite' }} />
+                    Recording...
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* --- Clinical Form --- */}
-        <div className="grid-2">
-          {/* Physician Profile */}
-          <section className="st-section">
-            <div className="st-section-title">
-              <div className="st-icon-box"><span className="material-symbols-outlined">clinical_notes</span></div>
-              Physician Profile
-            </div>
-            <div className="form-group">
-              <label className="form-label">Full Name</label>
-              <input className="form-input" type="text" value={doctorInfo.name} onChange={(e) => setDoctorInfo({...doctorInfo, name: e.target.value})} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
-              <div className="form-group">
-                <label className="form-label">Qualification</label>
-                <input className="form-input" type="text" value={doctorInfo.qualification} onChange={(e) => setDoctorInfo({...doctorInfo, qualification: e.target.value})} />
+              <div style={{ flex: 1 }}>
+                <label className="dr-label">Consultation Audio Capture</label>
+                <p style={{ fontSize: '0.85rem', opacity: 0.6, marginBottom: '0.5rem' }}>Real-time dictation using Whisper AI</p>
               </div>
-              <div className="form-group">
-                <label className="form-label">Reg No.</label>
-                <input className="form-input" type="text" value={doctorInfo.regNo} onChange={(e) => setDoctorInfo({...doctorInfo, regNo: e.target.value})} />
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Clinic Address</label>
-              <input className="form-input" type="text" value={doctorInfo.clinic} onChange={(e) => setDoctorInfo({...doctorInfo, clinic: e.target.value})} />
             </div>
           </section>
 
-          {/* Patient Information */}
-          <section className="st-section">
-            <div className="st-section-title">
-              <div className="st-icon-box"><span className="material-symbols-outlined">person</span></div>
-              Patient Information
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
-              <div className="form-group">
-                <label className="form-label">Patient Name</label>
-                <input className="form-input" placeholder="John Doe" type="text" value={patientInfo.name} onChange={(e) => setPatientInfo({...patientInfo, name: e.target.value})} />
+          <section className="dr-card" style={{ marginBottom: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+              <label className="dr-label">Direct Clinical Audio Upload</label>
+              <div style={{ 
+                border: '2px dashed var(--dr-outline-variant)', 
+                borderRadius: '16px', 
+                padding: '1.25rem', 
+                textAlign: 'center',
+                backgroundColor: 'rgba(0, 107, 98, 0.02)',
+                position: 'relative',
+                cursor: 'pointer'
+              }}>
+                <input 
+                  type="file" 
+                  accept="audio/*" 
+                  onChange={handleFileUpload}
+                  style={{ 
+                    position: 'absolute', 
+                    inset: 0, 
+                    opacity: 0, 
+                    cursor: 'pointer' 
+                  }} 
+                />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--dr-primary)' }}>upload_file</span>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--dr-on-surface-variant)' }}>
+                    Drop record or click to select
+                  </span>
+                </div>
               </div>
-              <div className="form-group">
-                <label className="form-label">Age</label>
-                <input className="form-input" placeholder="24" type="number" value={patientInfo.age} onChange={(e) => setPatientInfo({...patientInfo, age: e.target.value})} />
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
-              <div className="form-group">
-                <label className="form-label">Gender</label>
-                <select className="form-input" value={patientInfo.gender} onChange={(e) => setPatientInfo({...patientInfo, gender: e.target.value})}>
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Non-binary</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Date</label>
-                <input className="form-input" type="date" value={patientInfo.date} onChange={(e) => setPatientInfo({...patientInfo, date: e.target.value})} />
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Contact Number (For Code Search)</label>
-              <input className="form-input" placeholder="+1 (555) 000-0000" type="tel" value={patientInfo.phone} onChange={(e) => setPatientInfo({...patientInfo, phone: e.target.value})} />
             </div>
           </section>
         </div>
 
-        {/* Symptoms & Diagnosis */}
-        <section className="st-section">
-          <div className="st-section-title">
-            <div className="st-icon-box"><span className="material-symbols-outlined">stethoscope</span></div>
-            Symptoms & Diagnosis
-          </div>
-          <div className="form-group">
-            <label className="form-label">Presenting Symptoms</label>
-            <textarea className="form-textarea" placeholder="Describe the patient's complaints..." value={clinicalNotes.symptoms} onChange={(e) => setClinicalNotes({...clinicalNotes, symptoms: e.target.value})} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Final Diagnosis</label>
-            <textarea className="form-textarea" style={{ minHeight: '60px' }} placeholder="Enter clinical diagnosis..." value={clinicalNotes.diagnosis} onChange={(e) => setClinicalNotes({...clinicalNotes, diagnosis: e.target.value})} />
+        {/* Transcript Result */}
+        <section className="dr-card">
+          <label className="dr-label">Clinical Intelligence Output</label>
+          <div className="dr-transcript-box">
+            {transcription || "Initialize consultation audio capture or upload a recording..."}
+            {isProcessing && <p style={{ color: 'var(--dr-primary)', fontSize: '0.85rem', marginTop: '0.5rem' }}>Analyzing clinical dialogue with Whisper v3...</p>}
           </div>
         </section>
 
-        {/* Medicines Table */}
-        <section className="st-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <div className="st-section-title" style={{ marginBottom: 0 }}>
-              <div className="st-icon-box"><span className="material-symbols-outlined">medication</span></div>
-              Prescribed Medications
+        {/* Patient Contact Info */}
+        <section className="dr-card">
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem' }}>Patient Identification</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+            <div>
+              <label className="dr-label">Full Name</label>
+              <input className="dr-input" placeholder="e.g. John Doe" value={patientInfo.name} onChange={e => setPatientInfo({...patientInfo, name: e.target.value})} />
             </div>
-            <button className="btn btn-secondary" onClick={addMedicineRow}>
+            <div>
+              <label className="dr-label">Contact Number (Primary Key)</label>
+              <input className="dr-input" placeholder="10-digit phone number" value={patientInfo.phone} onChange={e => setPatientInfo({...patientInfo, phone: e.target.value})} />
+            </div>
+          </div>
+        </section>
+
+        {/* Clinical Presentation */}
+        <section className="dr-card">
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem' }}>Clinical Presentation</h2>
+          <div style={{ marginBottom: '2rem' }}>
+            <label className="dr-label">Symptoms & Chief Complaint</label>
+            <textarea className="dr-input" style={{ minHeight: '100px' }} placeholder="Describe patient complaints..." value={clinicalNotes.symptoms} onChange={e => setClinicalNotes({...clinicalNotes, symptoms: e.target.value})} />
+          </div>
+          <div>
+            <label className="dr-label">Primary Diagnosis</label>
+            <input className="dr-input" placeholder="Confirm clinical diagnosis..." value={clinicalNotes.diagnosis} onChange={e => setClinicalNotes({...clinicalNotes, diagnosis: e.target.value})} />
+          </div>
+        </section>
+
+        {/* Pharmacological Treatment */}
+        <section className="dr-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Pharmacological Treatment</h2>
+            <button className="dr-btn-add" onClick={addMedicineRow}>
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
               Add Medicine
             </button>
           </div>
-          <div className="st-table-wrap">
-            <table className="st-table">
-              <thead>
-                <tr>
-                  <th>Medicine Name</th>
-                  <th>Dosage</th>
-                  <th>Frequency</th>
-                  <th>Duration</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {medicines.map((med, index) => (
-                  <tr key={index}>
-                    <td><input className="form-input" style={{ background: 'transparent' }} value={med.name} onChange={(e) => updateMedicine(index, "name", e.target.value)} /></td>
-                    <td><input className="form-input" style={{ background: 'transparent' }} value={med.dosage} onChange={(e) => updateMedicine(index, "dosage", e.target.value)} /></td>
-                    <td><input className="form-input" style={{ background: 'transparent' }} value={med.frequency} onChange={(e) => updateMedicine(index, "frequency", e.target.value)} /></td>
-                    <td><input className="form-input" style={{ background: 'transparent' }} value={med.duration} onChange={(e) => updateMedicine(index, "duration", e.target.value)} /></td>
-                    <td>
-                      <button className="material-symbols-outlined" style={{ color: 'var(--color-error)', cursor: 'pointer', border: 'none', background: 'transparent' }} onClick={() => removeMedicine(index)}>delete</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          
+          <div style={{ marginBottom: '1rem' }}>
+            {medicines.map((med, index) => (
+              <div key={index} className="dr-medicine-row">
+                <div>
+                  <label className="dr-label">Medicine Name</label>
+                  <input className="dr-input" value={med.name} onChange={e => updateMedicine(index, 'name', e.target.value)} />
+                </div>
+                <div>
+                  <label className="dr-label">Freq.</label>
+                  <input className="dr-input" style={{ textAlign: 'center' }} value={med.dosage} onChange={e => updateMedicine(index, 'dosage', e.target.value)} />
+                </div>
+                <div>
+                  <label className="dr-label">Durat.</label>
+                  <input className="dr-input" style={{ textAlign: 'center' }} value={med.duration} onChange={e => updateMedicine(index, 'duration', e.target.value)} />
+                </div>
+                <div>
+                  <label className="dr-label">Instructions</label>
+                  <input className="dr-input" value={med.instructions} onChange={e => updateMedicine(index, 'instructions', e.target.value)} />
+                </div>
+                <button className="material-symbols-outlined" style={{ color: 'var(--dr-error)', border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.5 }} onClick={() => removeMedicine(index)}>delete</button>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* Tests & Advice */}
-        <div className="grid-2">
-          <section className="st-section">
-            <div className="st-section-title">
-              <div className="st-icon-box"><span className="material-symbols-outlined">biotech</span></div>
-              Recommended Tests
-            </div>
-            <textarea className="form-textarea" style={{ minHeight: '80px' }} placeholder="Blood tests, X-ray, MRI..." value={clinicalNotes.tests} onChange={(e) => setClinicalNotes({...clinicalNotes, tests: e.target.value})} />
+        {/* Investigations & Advice */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+          <section className="dr-card">
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem' }}>Recommended Tests</h2>
+            <textarea className="dr-input" style={{ minHeight: '80px' }} placeholder="Blood tests, X-ray..." value={clinicalNotes.tests} onChange={e => setClinicalNotes({...clinicalNotes, tests: e.target.value})} />
           </section>
-          <section className="st-section">
-            <div className="st-section-title">
-              <div className="st-icon-box"><span className="material-symbols-outlined">psychiatry</span></div>
-              Advice & Notes
-            </div>
-            <textarea className="form-textarea" style={{ minHeight: '80px' }} placeholder="Avoid oily foods, increase hydration..." value={clinicalNotes.advice} onChange={(e) => setClinicalNotes({...clinicalNotes, advice: e.target.value})} />
+          <section className="dr-card">
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem' }}>Lifestyle Advice</h2>
+            <textarea className="dr-input" style={{ minHeight: '80px' }} placeholder="Dietary restrictions..." value={clinicalNotes.advice} onChange={e => setClinicalNotes({...clinicalNotes, advice: e.target.value})} />
           </section>
         </div>
 
-        {/* Follow Up */}
-        <section className="st-section">
-          <div className="st-section-title">
-            <div className="st-icon-box"><span className="material-symbols-outlined">event_repeat</span></div>
-            Follow-Up Plan
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
-            <div className="form-group">
-              <label className="form-label">Follow-Up Date</label>
-              <input className="form-input" type="date" value={clinicalNotes.followUpDate} onChange={(e) => setClinicalNotes({...clinicalNotes, followUpDate: e.target.value})} />
+        {/* Follow-up & Signature */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem' }}>
+          <section className="dr-card">
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem' }}>Follow-up Schedule</h2>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label className="dr-label">Next Visit Date</label>
+              <input type="date" className="dr-input" value={clinicalNotes.nextVisit} onChange={e => setClinicalNotes({...clinicalNotes, nextVisit: e.target.value})} />
             </div>
-            <div className="form-group">
-              <label className="form-label">Follow-Up Instructions</label>
-              <input className="form-input" placeholder="Bring previous reports..." type="text" value={clinicalNotes.followUpInstructions} onChange={(e) => setClinicalNotes({...clinicalNotes, followUpInstructions: e.target.value})} />
+            <div>
+              <label className="dr-label">Review Notes</label>
+              <input className="dr-input" placeholder="Verification required..." value={clinicalNotes.reviewNotes} onChange={e => setClinicalNotes({...clinicalNotes, reviewNotes: e.target.value})} />
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Generate Button */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '4rem 0' }}>
-          <button className="btn btn-primary" style={{ padding: '1.25rem 3rem', fontSize: '1.1rem' }} onClick={handleCreatePrescription} disabled={isProcessing}>
-            {isProcessing ? <div className="spinner"></div> : <><span className="material-symbols-outlined">description</span> Generate Prescription Code</>}
+          <section className="dr-card" style={{ backgroundColor: 'var(--dr-surface-container-low)', border: 'none' }}>
+            <div className="dr-signature-box">
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--dr-primary)', opacity: 0.2 }}>edit</span>
+            </div>
+            <p className="dr-label">Physician Digital Authentication</p>
+            <div style={{ marginTop: '1.5rem' }}>
+              <p style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.25rem' }}>{doctorInfo.name}</p>
+              <p style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 600 }}>{doctorInfo.qualification}</p>
+              <p style={{ fontSize: '0.75rem', opacity: 0.6 }}>Reg: {doctorInfo.regNo}</p>
+            </div>
+          </section>
+        </div>
+
+        {/* Generate Action */}
+        <section style={{ marginTop: '6rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3rem' }}>
+          <button className="dr-btn-primary" onClick={handleCreatePrescription} disabled={isProcessing}>
+            {isProcessing ? "Processing..." : (
+              <><span className="material-symbols-outlined">description</span> Generate Prescription Code</>
+            )}
           </button>
 
           {prescriptionCode && (
-            <div style={{ marginTop: '2.5rem', width: '100%', maxWidth: '500px', background: 'rgba(52, 110, 246, 0.05)', padding: '2rem', borderRadius: '24px', border: '1px dashed var(--color-primary)', textAlign: 'center' }}>
-              <label className="form-label" style={{ color: 'var(--color-primary)', opacity: 0.6 }}>Secure Prescription Code</label>
-              <div className="font-headline" style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '0.2em', margin: '0.5rem 0' }}>
-                {prescriptionCode}
+            <div className="dr-code-box">
+              <div>
+                <p className="dr-label" style={{ marginBottom: '0.5rem' }}>Prescription Code</p>
+                <p className="dr-code-text">{prescriptionCode}</p>
               </div>
-              <button className="btn btn-secondary" style={{ width: '100%' }} onClick={copyCode}>
-                <span className="material-symbols-outlined">{copied ? 'check' : 'content_copy'}</span>
-                {copied ? 'Copied to Clipboard' : 'Copy Prescription Code'}
+              <button onClick={copyCode} style={{ background: 'white', padding: '1rem', borderRadius: '16px', border: '1px solid var(--dr-outline-variant)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.9rem', fontWeight: 700 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{copied ? 'check' : 'content_copy'}</span>
+                {copied ? 'Copied' : 'Copy Code'}
               </button>
             </div>
           )}
-        </div>
+        </section>
       </main>
 
-      {/* --- Footer (Stitch Exact) --- */}
-      <footer style={{ background: 'var(--bg-surface-container)', borderTop: '1px solid var(--outline-variant)', padding: '4rem 1.5rem' }}>
-        <div className="st-container" style={{ padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
-          <div>
-            <p className="font-headline" style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '1rem' }}>Clinical Sanctuary Systems</p>
-            <p style={{ fontSize: '0.75rem', opacity: 0.6, maxWidth: '300px', lineHeight: '1.6' }}>Empowering modern medicine with structured data and seamless clinician workflows.</p>
-            <p style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '1rem' }}>© 2024 Clinical Sanctuary Systems. All rights reserved.</p>
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
-            <a style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)' }} href="#">Privacy</a>
-            <a style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)' }} href="#">Terms</a>
-            <a style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)' }} href="#">Support</a>
-          </div>
-        </div>
+      <footer style={{ backgroundColor: 'var(--dr-surface-container)', padding: '6rem 2rem', textAlign: 'center' }}>
+        <p className="dr-partner-tag" style={{ marginBottom: '1.5rem' }}>Powered by Tonal Serenity AI</p>
+        <p style={{ fontSize: '0.85rem', opacity: 0.5, maxWidth: '500px', margin: '0 auto' }}>
+          © 2024 Clinical Sanctuary Systems. All data encrypted and HIPAA compliant.
+          Precision documentation for modern healthcare professionals.
+        </p>
       </footer>
-
-      {/* --- Theme Toggle Button --- */}
-      <button className="theme-toggle" onClick={toggleTheme}>
-        <span className="material-symbols-outlined">{theme === "dark" ? "light_mode" : "dark_mode"}</span>
-      </button>
     </div>
   );
 }

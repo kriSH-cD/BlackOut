@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tonal Serenity | Patient Portal</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#596064",
+                      "on-tertiary-fixed": "#324054",
+                      "surface-container-high": "#e3e9ed",
+                      "secondary-container": "#d3e4fe",
+                      "on-primary-fixed-variant": "#00675e",
+                      "outline-variant": "#acb3b7",
+                      "surface-dim": "#d4dbdf",
+                      "surface-container-low": "#f0f4f7",
+                      "background": "#f7f9fb",
+                      "tertiary-fixed-dim": "#c7d5ee",
+                      "error-dim": "#67040d",
+                      "on-background": "#2c3437",
+                      "surface-container": "#eaeff2",
+                      "on-primary": "#e2fff9",
+                      "on-tertiary-fixed-variant": "#4e5c71",
+                      "primary-fixed-dim": "#7ae7d8",
+                      "primary-fixed": "#89f5e7",
+                      "surface": "#f7f9fb",
+                      "primary-container": "#89f5e7",
+                      "inverse-surface": "#0b0f10",
+                      "on-error": "#fff7f6",
+                      "primary": "#006b62",
+                      "surface-variant": "#dce4e8",
+                      "secondary": "#506076",
+                      "secondary-fixed-dim": "#c5d6f0",
+                      "on-primary-container": "#005c54",
+                      "surface-container-highest": "#dce4e8",
+                      "tertiary": "#526075",
+                      "inverse-primary": "#91feef",
+                      "on-error-container": "#6e0a12",
+                      "tertiary-container": "#d5e3fd",
+                      "outline": "#747c80",
+                      "tertiary-fixed": "#d5e3fd",
+                      "error-container": "#fa746f",
+                      "secondary-dim": "#44546a",
+                      "on-secondary-fixed-variant": "#4d5d73",
+                      "on-secondary-container": "#435368",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-dim": "#465469",
+                      "error": "#a83836",
+                      "inverse-on-surface": "#9a9d9f",
+                      "on-secondary-fixed": "#314055",
+                      "primary-dim": "#005e56",
+                      "on-surface": "#2c3437",
+                      "on-secondary": "#f7f9ff",
+                      "on-primary-fixed": "#004841",
+                      "on-tertiary-container": "#455367",
+                      "surface-bright": "#f7f9fb",
+                      "secondary-fixed": "#d3e4fe",
+                      "surface-tint": "#006b62",
+                      "on-tertiary": "#f8f8ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "2xl": "1rem",
+                      "3xl": "1.5rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Manrope"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .signature-gradient { background: linear-gradient(135deg, #006b62 0%, #89f5e7 100%); }
+        .bento-card { transition: transform 0.2s ease; }
+    </style>
+</head>
+<body class="text-on-surface">
+<main class="max-w-3xl mx-auto px-4 py-12 space-y-8">
+<!-- Header Branding (Editorial Authority) -->
+<header class="text-center space-y-2">
+<h1 class="font-headline text-4xl font-extrabold tracking-tight text-primary">Tonal Serenity</h1>
+<p class="text-on-surface-variant font-medium">Digital Health Sanctuary</p>
+</header>
+<!-- 1. Access Section (Top) -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_20px_40px_-10px_rgba(44,52,55,0.06)] border border-outline-variant/10" id="access-section">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-2xl bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">key</span>
+</div>
+<h2 class="font-headline text-2xl font-bold tracking-tight">Access Your Prescription</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant ml-1">Phone Number</label>
+<input class="w-full bg-surface-container-highest border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary/20 placeholder:text-outline text-on-surface" placeholder="+1 (555) 000-0000" type="tel"/>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant ml-1">Prescription Code</label>
+<input class="w-full bg-surface-container-highest border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary/20 placeholder:text-outline text-on-surface" placeholder="RX-9921-00" type="text"/>
+</div>
+</div>
+<button class="w-full mt-6 signature-gradient text-on-primary font-headline font-bold py-4 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
+<span>View Prescription</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<p class="mt-4 text-center text-xs text-on-surface-variant italic">Waiting for secure authentication...</p>
+</section>
+<!-- 2. Problem Card -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_20px_40px_-10px_rgba(44,52,55,0.06)] border border-outline-variant/10">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div>
+<h3 class="text-xs font-bold uppercase tracking-widest text-primary mb-4">Patient Symptoms</h3>
+<ul class="space-y-3">
+<li class="flex items-center gap-3 text-on-surface">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                            Persistent dry cough
+                        </li>
+<li class="flex items-center gap-3 text-on-surface">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                            Mild chest congestion
+                        </li>
+<li class="flex items-center gap-3 text-on-surface">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                            Occasional fatigue
+                        </li>
+</ul>
+</div>
+<div class="bg-surface-container-low rounded-2xl p-6">
+<h3 class="text-xs font-bold uppercase tracking-widest text-primary mb-2">Diagnosis</h3>
+<p class="font-headline text-xl font-bold text-on-surface">Upper Respiratory Tract Infection</p>
+<p class="text-sm text-on-surface-variant mt-2">Acute presentation with no bronchial involvement detected.</p>
+</div>
+</div>
+</section>
+<!-- 3. Treatment (Medicines) Card -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_20px_40px_-10px_rgba(44,52,55,0.06)] border border-outline-variant/10">
+<div class="flex items-center justify-between mb-8">
+<h2 class="font-headline text-2xl font-bold tracking-tight">Treatment Plan</h2>
+<span class="bg-primary/10 text-primary px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase">7 Days Course</span>
+</div>
+<div class="space-y-6">
+<!-- Medicine Item -->
+<div class="flex items-start gap-4 p-5 rounded-2xl bg-surface hover:bg-surface-container transition-colors">
+<div class="w-12 h-12 shrink-0 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pill</span>
+</div>
+<div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<p class="font-bold text-lg leading-tight text-on-surface">Amoxicillin 500mg</p>
+<p class="text-sm text-on-surface-variant">Antibiotic</p>
+</div>
+<div class="flex flex-wrap gap-4 md:justify-end text-sm">
+<div class="text-right">
+<p class="text-xs font-bold text-primary uppercase">Dosage</p>
+<p class="font-semibold text-on-surface">1 Capsule</p>
+</div>
+<div class="text-right">
+<p class="text-xs font-bold text-primary uppercase">Frequency</p>
+<p class="font-semibold text-on-surface">Twice Daily</p>
+</div>
+</div>
+<div class="md:col-span-2 pt-2 border-t border-outline-variant/10">
+<p class="text-sm italic text-on-surface-variant">Take after meals with plenty of water. Do not skip doses.</p>
+</div>
+</div>
+</div>
+<!-- Medicine Item -->
+<div class="flex items-start gap-4 p-5 rounded-2xl bg-surface hover:bg-surface-container transition-colors">
+<div class="w-12 h-12 shrink-0 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pill</span>
+</div>
+<div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<p class="font-bold text-lg leading-tight text-on-surface">Guaifenesin Syrup</p>
+<p class="text-sm text-on-surface-variant">Expectorant</p>
+</div>
+<div class="flex flex-wrap gap-4 md:justify-end text-sm">
+<div class="text-right">
+<p class="text-xs font-bold text-primary uppercase">Dosage</p>
+<p class="font-semibold text-on-surface">10ml</p>
+</div>
+<div class="text-right">
+<p class="text-xs font-bold text-primary uppercase">Frequency</p>
+<p class="font-semibold text-on-surface">Every 8 Hours</p>
+</div>
+</div>
+<div class="md:col-span-2 pt-2 border-t border-outline-variant/10">
+<p class="text-sm italic text-on-surface-variant">Shake well before use. Best taken before sleep.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Tests Card -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_20px_40px_-10px_rgba(44,52,55,0.06)] border border-outline-variant/10">
+<h2 class="font-headline text-2xl font-bold tracking-tight mb-6">Required Diagnostics</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/5">
+<span class="material-symbols-outlined text-primary">biotech</span>
+<div>
+<p class="font-bold text-on-surface">Complete Blood Count (CBC)</p>
+<p class="text-xs text-on-surface-variant">Check for infection markers</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/5 opacity-60">
+<span class="material-symbols-outlined text-outline">radiology</span>
+<div>
+<p class="font-bold text-on-surface">Chest X-Ray (Optional)</p>
+<p class="text-xs text-on-surface-variant">Only if symptoms persist &gt; 5 days</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. Advice Card -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_20px_40px_-10px_rgba(44,52,55,0.06)] border border-outline-variant/10">
+<h2 class="font-headline text-2xl font-bold tracking-tight mb-8">Lifestyle &amp; Diet</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-6">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary bg-primary-container/30 p-2 rounded-xl h-fit">restaurant</span>
+<div>
+<p class="font-bold text-on-surface mb-1">Nutritional Guidance</p>
+<p class="text-sm text-on-surface-variant">Focus on high-protein, easily digestible warm soups. Avoid refrigerated drinks and oily foods.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary bg-primary-container/30 p-2 rounded-xl h-fit">bedtime</span>
+<div>
+<p class="font-bold text-on-surface mb-1">Rest &amp; Recovery</p>
+<p class="text-sm text-on-surface-variant">Ensure 8-9 hours of sleep. Use a humidifier in your room if possible.</p>
+</div>
+</div>
+</div>
+<div class="bg-tertiary-fixed rounded-2xl p-6 border border-outline-variant/10">
+<p class="text-xs font-bold uppercase tracking-widest text-on-tertiary-fixed mb-3">Clinician Notes</p>
+<p class="text-sm text-on-tertiary-fixed-variant leading-relaxed italic">"Patient exhibits seasonal allergic sensitivity. Monitor for fever spikes exceeding 101°F. If difficulty in breathing occurs, contact emergency support immediately."</p>
+</div>
+</div>
+</section>
+<!-- 6. Follow-up Card -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_20px_40px_-10px_rgba(44,52,55,0.06)] border border-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="flex items-center gap-6">
+<div class="bg-primary-container p-4 rounded-2xl text-on-primary-container text-center min-w-[80px]">
+<p class="text-xs font-bold uppercase">Oct</p>
+<p class="text-3xl font-black">24</p>
+</div>
+<div>
+<h2 class="font-headline text-xl font-bold">Follow-up Session</h2>
+<p class="text-on-surface-variant">Thursday at 10:30 AM • Video Consult</p>
+</div>
+</div>
+<button class="px-8 py-3 rounded-full border-2 border-primary text-primary font-bold hover:bg-primary/5 transition-colors">
+                Reschedule
+            </button>
+</section>
+<!-- 7. Doctor Info (Signature) -->
+<footer class="text-center pt-8 border-t border-outline-variant/20 space-y-6">
+<div class="flex flex-col items-center">
+<img alt="Dr. Alistair Vance" class="w-20 h-20 rounded-full grayscale hover:grayscale-0 transition-all duration-500 mb-4 object-cover border-4 border-white shadow-lg" data-alt="Close up portrait of a professional female doctor in white coat smiling warmly in a bright medical setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALOTziNtXOBjUiTUrvDz0X66SnsGgOQqXPifR5oiV2iMfykgt1Axzgu4-uDjuYB_z1vr_-HI8SLUIbYZqC2BbEDij_QxmSbvhxZkswVpSGm5vySbfpdPqDOt9QSeoH7xq15OqNENWjAf6ADykaeyUU738CpD7W6nP18hKHUS2IWxTyH60JDUhEq60bg8SfXCwzcAVYpPFFSPTvFNZlUoFfqhi8ZAeuJDQqUkH1Lk02CPg6Ip6ejt7MbVww8stTGVA_FA4-moMIW9XQ"/>
+<p class="font-headline text-xl font-black text-on-surface tracking-tight">Dr. Alistair Vance, MD</p>
+<p class="text-sm text-on-surface-variant">Internal Medicine • Reg #MED-772911-X</p>
+<p class="text-sm font-bold text-primary mt-1">Serenity Wellness Clinic, North Wing</p>
+</div>
+</footer>
+<!-- 8. AI Assistant Section (Bottom) -->
+<section class="sticky bottom-4 z-10" id="ai-assistant">
+<div class="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-[0_25px_50px_-12px_rgba(0,107,98,0.15)] border border-primary/10">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<h2 class="font-headline font-bold text-lg">Ask About Your Prescription</h2>
+</div>
+<div class="flex gap-2">
+<div class="relative flex-grow">
+<input class="w-full bg-surface-container-low border-none rounded-2xl py-4 pl-4 pr-12 focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-outline/60" placeholder="Can I take Amoxicillin with coffee?" type="text"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline/40">mic</span>
+</div>
+<button class="bg-primary text-on-primary w-14 h-14 rounded-2xl flex items-center justify-center hover:bg-primary-dim transition-colors shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+<p class="mt-3 text-[10px] text-center font-bold text-on-surface-variant uppercase tracking-widest opacity-60">
+                    AI will answer only based on your clinical prescription data
+                </p>
+</div>
+</section>
+</main>
+<!-- Space for footer visibility over sticky element -->
+<div class="h-24"></div>
+</body></html>
