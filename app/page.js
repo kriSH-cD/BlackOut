@@ -15,7 +15,7 @@ export default function Home() {
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ width: '32px', height: '32px', backgroundColor: '#346EF6', borderRadius: '8px' }} />
-            <span style={{ fontWeight: 800, letterSpacing: '-0.02em', color: '#1e293b' }}>DOC-HELP</span>
+            <span style={{ fontWeight: 800, letterSpacing: '-0.02em', color: '#1e293b' }}>PRESCRIPTO</span>
           </div>
           <Link href="/doctor" style={{ 
             backgroundColor: '#346EF6', 
