@@ -214,8 +214,7 @@ FOLLOW-UP: ${clinicalNotes.nextVisit || "Not scheduled"} - ${clinicalNotes.revie
               <span style={{ position: 'absolute', top: 0, right: 0, width: '8px', height: '8px', backgroundColor: 'var(--dr-error)', borderRadius: '50%', border: '2px solid white' }} />
             </button>
             <button className="material-symbols-outlined" style={{ color: 'var(--dr-on-surface-variant)', background: 'transparent', border: 'none', cursor: 'pointer' }}>settings</button>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--dr-outline-variant)', overflow: 'hidden', marginLeft: '0.5rem' }}>
-              <img src="/api/placeholder/40/40" alt="Doctor" style={{ width: '100%', height: '100%', objectCover: 'cover' }} />
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--dr-outline-variant)', overflow: 'hidden', marginLeft: '0.5rem' }}>              {/* Removed placeholder image */}
             </div>
           </div>
         </div>

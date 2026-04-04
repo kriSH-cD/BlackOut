@@ -303,8 +303,7 @@ export default function PatientPage() {
               </section>
 
               <section className="pt-card-glass" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--dr-outline-variant)', overflow: 'hidden' }}>
-                  <img src="/api/placeholder/64/64" alt="Doctor" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--dr-outline-variant)', overflow: 'hidden' }}>                  {/* Removed placeholder image */}
                 </div>
                 <div>
                   <h3 style={{ fontWeight: 900 }}>Dr. Alistair Vance</h3>
