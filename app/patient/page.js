@@ -129,7 +129,7 @@ export default function PatientPage() {
         {/* Header Branding */}
         <header style={{ textAlign: 'center', marginBottom: '1rem' }}>
           <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '2.5rem', fontWeight: 900, color: 'var(--dr-primary)', letterSpacing: '-0.04em', marginBottom: '0.5rem' }}>
-            Tonal Serenity
+            PRESCRIPTO
           </h1>
           <p style={{ color: 'var(--dr-on-surface-variant)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.2em' }}>
             Digital Health Sanctuary

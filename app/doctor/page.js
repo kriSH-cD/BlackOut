@@ -199,7 +199,7 @@ FOLLOW-UP: ${clinicalNotes.nextVisit || "Not scheduled"} - ${clinicalNotes.revie
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--dr-primary)', letterSpacing: '-0.02em' }}>
-              Tonal Serenity
+              PRESCRIPTO
             </span>
             <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--dr-outline-variant)', opacity: 0.3 }} />
             <div style={{ display: 'flex', alignItems: 'center', background: 'var(--dr-surface-container-low)', padding: '0.5rem 1.25rem', borderRadius: '99px', gap: '0.75rem' }}>
