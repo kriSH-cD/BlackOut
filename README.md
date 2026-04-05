@@ -1,4 +1,4 @@
-# 🩺 Clinical Sanctuary — Digital Prescription Frontend
+# 🩺 PRESCRIPTO — Digital Prescription Frontend
 
 A modern, high-precision healthcare interface for doctors and patients. Built with **Next.js**, **Groq AI**, and high-end **Glassmorphism** styling.
 
@@ -75,4 +75,4 @@ frontend/
 ---
 
 ## 🏛️ License
-Part of the **Doc-Help** Digital Ecosystem. © 2024.
+Part of the **PRESCRIPTO** Digital Ecosystem. © 2024.
