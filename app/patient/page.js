@@ -14,6 +14,7 @@ export default function PatientPage() {
   const [aiQuery, setAiQuery] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -91,13 +92,13 @@ export default function PatientPage() {
           messages: [
             {
               role: "system",
-              content: `You are a helpful medical assistant for a patient. You only answer questions based ONLY on the following clinical prescription data. Do not provide general medical advice outside this context. 
+              content: `You are a strict medical AI assistant. You must ONLY answer questions based on the following prescription context. If the user asks anything unrelated to this context, or something that is not strictly included in this text, you MUST refuse to answer and tell them to contact their doctor. Do not provide general medical knowledge. 
               
               PRESCRIPTION CONTEXT:
-              Meds: ${prescription.medicines}
-              Report: ${prescription.report_text}
+              Medications: ${prescription.medicines}
+              Notes: ${prescription.report_text}
               
-              Keep your answer concise (max 2-3 sentences), reassuring, and strictly based on the provided text. If the answer is not in the text, advise them to contact their doctor.`,
+              Keep answers very concise (1-3 sentences) and reassuring.`,
             },
             { role: "user", content: aiQuery },
           ],
@@ -132,7 +133,7 @@ export default function PatientPage() {
             PRESCRIPTO
           </h1>
           <p style={{ color: 'var(--dr-on-surface-variant)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.2em' }}>
-            Digital Health Sanctuary
+            Digital Health Prescription
           </p>
         </header>
 
@@ -182,7 +183,7 @@ export default function PatientPage() {
             <section className="pt-card-glass">
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '3rem' }}>
                 <div>
-                  <h3 className="dr-label" style={{ color: 'var(--dr-primary)', marginBottom: '1.25rem' }}>Patient Presentation</h3>
+                  <h3 className="dr-label" style={{ color: 'var(--dr-primary)', marginBottom: '1.25rem' }}>Patient symptoms</h3>
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {report.SYMPTOMS ? report.SYMPTOMS.split(',').map((symptom, i) => (
                       <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--dr-on-surface)', fontSize: '0.95rem' }}>
@@ -247,104 +248,115 @@ export default function PatientPage() {
               </div>
             </section>
 
-            {/* 4. Required Diagnostics */}
-            <section className="pt-card-glass">
-              <h2 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem' }}>Required Investigations</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                {(report.TESTS || "No tests ordered.").split(',').map((test, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem', background: 'var(--dr-surface-container-low)', borderRadius: '20px', border: '1px solid rgba(172, 179, 183, 0.05)' }}>
-                    <span className="material-symbols-outlined" style={{ color: 'var(--dr-primary)' }}>biotech</span>
-                    <div>
-                      <p style={{ fontWeight: 800, fontSize: '0.95rem' }}>{test.trim()}</p>
-                      <p style={{ fontSize: '0.7rem', color: 'var(--dr-on-surface-variant)', marginTop: '0.1rem' }}>DIAGNOSTIC VERIFICATION</p>
+            {/* 4. Required Diagnostics & Advice */}
+            {(report.TESTS || report.ADVICE || report['FOLLOW-UP']) && (
+              <section className="pt-card-glass">
+                <h2 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem' }}>Clinical Guidelines & Roadmap</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
+                  
+                  {report.TESTS && (
+                    <div style={{ padding: '1rem', background: 'var(--dr-surface-container-low)', borderRadius: '16px' }}>
+                      <p className="dr-label" style={{ color: 'var(--dr-primary)', marginBottom: '0.5rem' }}>Required Tests</p>
+                      <p style={{ fontWeight: 600 }}>{report.TESTS}</p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  )}
 
-            {/* 5. Lifestyle Advice */}
-            <section className="pt-card-glass">
-              <h2 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem' }}>Clinical Advice & Guidance</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '3rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                  <div style={{ display: 'flex', gap: '1.25rem' }}>
-                    <div style={{ background: 'rgba(0, 107, 98, 0.1)', padding: '0.75rem', borderRadius: '12px', height: 'fit-content' }}>
-                      <span className="material-symbols-outlined" style={{ color: 'var(--dr-primary)' }}>restaurant</span>
+                  {report.ADVICE && (
+                    <div style={{ padding: '1rem', background: 'var(--dr-surface-container-low)', borderRadius: '16px' }}>
+                      <p className="dr-label" style={{ color: 'var(--dr-primary)', marginBottom: '0.5rem' }}>Lifestyle Advice</p>
+                      <p style={{ fontWeight: 600 }}>{report.ADVICE}</p>
                     </div>
-                    <div>
-                      <p style={{ fontWeight: 800, marginBottom: '0.25rem' }}>General Advice</p>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--dr-on-surface-variant)', lineHeight: '1.5' }}>
-                        {report.ADVICE || "Continue standard care protocols."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div style={{ background: 'var(--dr-primary-container)', color: 'var(--dr-on-primary-container)', padding: '1.5rem', borderRadius: '24px' }}>
-                  <p className="dr-label" style={{ color: 'var(--dr-on-primary-container)', opacity: 0.6, marginBottom: '0.75rem' }}>Physician's Summary</p>
-                  <p style={{ fontSize: '0.9rem', lineHeight: '1.6', fontWeight: 600, fontStyle: 'italic' }}>
-                    "The prescribed treatment is aimed at rapid stabilization. Retain this digital document for verification at any licensed pharmacy or pathology lab."
-                  </p>
-                </div>
-              </div>
-            </section>
+                  )}
 
-            {/* 6. Follow-up & Doctor Profile */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '8rem' }}>
-              <section className="pt-card-glass" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                <div style={{ background: 'var(--dr-primary)', color: 'white', padding: '1rem', borderRadius: '20px', textAlign: 'center', minWidth: '80px' }}>
-                  <p style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.2rem' }}>NEXT VISIT</p>
-                  <p style={{ fontSize: '1.5rem', fontWeight: 900 }}>{report['FOLLOW-UP'] ? report['FOLLOW-UP'].split('-')[0].trim() : '--'}</p>
-                </div>
-                <div>
-                  <h3 style={{ fontWeight: 800, marginBottom: '0.1rem' }}>Review Session</h3>
-                  <p style={{ fontSize: '0.85rem', opacity: 0.6 }}>Clinical follow-up required</p>
+                  {report['FOLLOW-UP'] && (
+                    <div style={{ padding: '1rem', background: 'var(--dr-primary)', color: 'white', borderRadius: '16px' }}>
+                      <p className="dr-label" style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>Follow-up Review</p>
+                      <p style={{ fontWeight: 800, fontSize: '1.1rem' }}>{report['FOLLOW-UP']}</p>
+                    </div>
+                  )}
+
                 </div>
               </section>
+            )}
 
-              <section className="pt-card-glass" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--dr-outline-variant)', overflow: 'hidden' }}>                  {/* Removed placeholder image */}
+            {/* 5. Floating AI Chatbot Widget */}
+            <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              
+              {/* Chat Window */}
+              {isChatOpen && (
+                <div style={{ 
+                  width: '350px', 
+                  backgroundColor: 'white', 
+                  borderRadius: '24px', 
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.15)', 
+                  marginBottom: '1rem',
+                  border: '1px solid var(--dr-outline-variant)',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  {/* Header */}
+                  <div style={{ padding: '1rem', backgroundColor: 'var(--dr-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
+                      <h3 style={{ fontWeight: 700, fontSize: '1rem' }}>Prescription AI</h3>
+                    </div>
+                    <button onClick={() => setIsChatOpen(false)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex' }}>
+                      <span className="material-symbols-outlined">close</span>
+                    </button>
+                  </div>
+
+                  {/* Body */}
+                  <div style={{ padding: '1rem', minHeight: '150px', maxHeight: '300px', overflowY: 'auto', backgroundColor: 'var(--dr-bg)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ background: 'var(--dr-surface-container-low)', padding: '1rem', borderRadius: '12px', borderBottomLeftRadius: '0px' }}>
+                      <p style={{ fontSize: '0.9rem', color: 'var(--dr-on-surface)' }}>Hello! I can answer any questions strictly related to your medicines or clinical notes shown here.</p>
+                    </div>
+
+                    {aiResponse && (
+                      <div style={{ background: 'rgba(0, 107, 98, 0.1)', padding: '1rem', borderRadius: '12px', borderBottomLeftRadius: '0px' }}>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--dr-on-surface)', lineHeight: '1.5' }}>{aiResponse}</p>
+                      </div>
+                    )}
+                    
+                    {isAiLoading && (
+                      <p style={{ fontSize: '0.75rem', color: 'var(--dr-primary)', fontWeight: 700, textAlign: 'center', fontStyle: 'italic' }}>Analyzing protocol...</p>
+                    )}
+                  </div>
+
+                  {/* Input Footer */}
+                  <div style={{ padding: '1rem', borderTop: '1px solid var(--dr-outline-variant)', display: 'flex', gap: '0.5rem', backgroundColor: 'white' }}>
+                    <input 
+                      style={{ flex: 1, padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--dr-outline-variant)', outline: 'none', fontSize: '0.9rem' }}
+                      placeholder="Ask about your record..." 
+                      value={aiQuery} 
+                      onChange={e => setAiQuery(e.target.value)}
+                      onKeyPress={e => e.key === 'Enter' && handleAiAsk()}
+                    />
+                    <button 
+                      onClick={handleAiAsk} 
+                      disabled={isAiLoading}
+                      style={{ background: 'var(--dr-primary)', color: 'white', border: 'none', borderRadius: '12px', width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>send</span>
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <h3 style={{ fontWeight: 900 }}>Dr. Alistair Vance</h3>
-                  <p style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--dr-primary)' }}>Internal Medicine Center</p>
-                  <p style={{ fontSize: '0.7rem', opacity: 0.5 }}>Reg #MED-772911-X</p>
-                </div>
-              </section>
+              )}
+
+              {/* Chat Toggle Button */}
+              <button 
+                onClick={() => setIsChatOpen(!isChatOpen)}
+                style={{ 
+                  width: '64px', height: '64px', borderRadius: '32px', backgroundColor: 'var(--dr-primary)', color: 'white', 
+                  border: 'none', boxShadow: '0 4px 12px rgba(0, 107, 98, 0.3)', cursor: 'pointer', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' 
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>
+                  {isChatOpen ? 'keyboard_arrow_down' : 'chat'}
+                </span>
+              </button>
             </div>
-
-            {/* 7. AI Assistant Sticky Bar */}
-            <section className="pt-sticky-ai">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--dr-primary)', fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
-                <h3 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '1.1rem' }}>Prescription Virtual Assistant</h3>
-              </div>
-              
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <input 
-                  className="pt-ai-input" 
-                  placeholder="Ask a question about your medication..." 
-                  value={aiQuery} 
-                  onChange={e => setAiQuery(e.target.value)}
-                  onKeyPress={e => e.key === 'Enter' && handleAiAsk()}
-                />
-                <button className="pt-ai-btn" onClick={handleAiAsk} disabled={isAiLoading}>
-                  <span className="material-symbols-outlined">{isAiLoading ? 'hourglass_top' : 'send'}</span>
-                </button>
-              </div>
-              
-              {aiResponse && (
-                <div style={{ marginTop: '1.25rem', padding: '1rem', background: 'var(--dr-surface-container-low)', borderRadius: '16px', borderLeft: '4px solid var(--dr-primary)' }}>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--dr-on-surface)', lineHeight: '1.5' }}>{aiResponse}</p>
-                </div>
-              )}
-              {isAiLoading && (
-                 <p style={{ marginTop: '0.75rem', textAlign: 'center', fontSize: '0.7rem', color: 'var(--dr-primary)', fontWeight: 700, letterSpacing: '0.1em' }}>CONSULTING CLINICAL ENGINE...</p>
-              )}
-               <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.6rem', color: 'var(--dr-on-surface-variant)', fontWeight: 800, textTransform: 'uppercase', opacity: 0.5 }}>
-                 AI outputs are derived strictly from your official clinician data
-               </p>
-            </section>
           </>
         )}
 
