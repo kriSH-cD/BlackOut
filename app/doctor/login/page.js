@@ -57,7 +57,7 @@ export default function DoctorLogin() {
         </div>
         
         <h2 className="lp-card-title" style={{ fontSize: '2rem', textAlign: 'center', marginBottom: '0.5rem' }}>
-          Physician Login
+          Doctor Login
         </h2>
         <p className="lp-card-text" style={{ textAlign: 'center', margin: '0 auto 2.5rem', fontSize: '1rem' }}>
           Secure access to your clinical dashboard.

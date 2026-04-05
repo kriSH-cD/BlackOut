@@ -26,7 +26,7 @@ export default function Home() {
             fontWeight: 700,
             textDecoration: 'none'
           }}>
-            PHYSICIAN ACCESS
+            DOCTOR ACCESS
           </Link>
         </div>
       </nav>
@@ -56,7 +56,7 @@ Better care through intelligent technology.
           <div className="lp-icon-box">
             <span className="material-symbols-outlined" style={{ color: '#346EF6', fontSize: '32px' }}>stethoscope</span>
           </div>
-          <h2 className="lp-card-title">Physician<br />Dashboard</h2>
+          <h2 className="lp-card-title">Doctor<br />Dashboard</h2>
           <p className="lp-card-text">
             Instrument your consultation with voice-to-text AI. Generate encrypted, 
             structured clinical records in real-time with high-fidelity accuracy.

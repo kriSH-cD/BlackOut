@@ -13,6 +13,18 @@ export default function DoctorDashboard() {
     clinic: "Serenity Integrated Care Clinic",
   });
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem('docHelpUser');
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      setDoctorInfo(prev => ({
+        ...prev,
+        name: `Dr. ${parsed.email ? parsed.email.split('@')[0] : "Physician"}`,
+        qualification: parsed.physicianType || prev.qualification,
+      }));
+    }
+  }, []);
+
   const [patientInfo, setPatientInfo] = useState({
     name: "",
     phone: "",
@@ -213,8 +225,11 @@ FOLLOW-UP: ${clinicalNotes.nextVisit || "Not scheduled"} - ${clinicalNotes.revie
               notifications
               <span style={{ position: 'absolute', top: 0, right: 0, width: '8px', height: '8px', backgroundColor: 'var(--dr-error)', borderRadius: '50%', border: '2px solid white' }} />
             </button>
-            <button className="material-symbols-outlined" style={{ color: 'var(--dr-on-surface-variant)', background: 'transparent', border: 'none', cursor: 'pointer' }}>settings</button>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--dr-outline-variant)', overflow: 'hidden', marginLeft: '0.5rem' }}>              {/* Removed placeholder image */}
+            <Link href="/doctor/settings" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <button className="material-symbols-outlined" style={{ color: 'var(--dr-on-surface-variant)', background: 'transparent', border: 'none', cursor: 'pointer' }}>settings</button>
+            </Link>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--dr-outline-variant)', overflow: 'hidden', marginLeft: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--dr-on-surface-variant)', fontWeight: 800 }}>
+              {doctorInfo.name ? doctorInfo.name.replace('Dr. ', '').charAt(0).toUpperCase() : 'D'}
             </div>
           </div>
         </div>
@@ -379,7 +394,7 @@ FOLLOW-UP: ${clinicalNotes.nextVisit || "Not scheduled"} - ${clinicalNotes.revie
             <div className="dr-signature-box">
               <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--dr-primary)', opacity: 0.2 }}>edit</span>
             </div>
-            <p className="dr-label">Physician Digital Authentication</p>
+            <p className="dr-label">Doctor Digital Authentication</p>
             <div style={{ marginTop: '1.5rem' }}>
               <p style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.25rem' }}>{doctorInfo.name}</p>
               <p style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 600 }}>{doctorInfo.qualification}</p>

@@ -58,7 +58,7 @@ export default function DoctorSignup() {
         </div>
         
         <h2 className="lp-card-title" style={{ fontSize: '2rem', textAlign: 'center', marginBottom: '0.5rem' }}>
-          Physician Registration
+          Doctor Registration
         </h2>
         <p className="lp-card-text" style={{ textAlign: 'center', margin: '0 auto 2.5rem', fontSize: '1rem' }}>
           Initialize your secure clinical profile.
@@ -87,7 +87,7 @@ export default function DoctorSignup() {
           </div>
 
           <div>
-            <label className="dr-label" style={{ marginBottom: '0.5rem', color: '#4b5563' }}>Physician Type / Specialty</label>
+            <label className="dr-label" style={{ marginBottom: '0.5rem', color: '#4b5563' }}>Doctor Type / Specialty</label>
             <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '0 1rem', transition: 'box-shadow 0.2s', ...((physicianType ? { boxShadow: 'inset 0 0 0 2px #45a29e', borderColor: 'transparent' } : {})) }}>
               <span className="material-symbols-outlined" style={{ color: '#94a3b8', fontSize: '20px', marginRight: '0.5rem' }}>stethoscope</span>
               <select 
