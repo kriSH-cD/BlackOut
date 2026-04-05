@@ -17,7 +17,7 @@ export default function Home() {
             <div style={{ width: '32px', height: '32px', backgroundColor: '#346EF6', borderRadius: '8px' }} />
             <span style={{ fontWeight: 800, letterSpacing: '-0.02em', color: '#1e293b' }}>PRESCRIPTO</span>
           </div>
-          <Link href="/doctor" style={{ 
+          <Link href="/doctor/login" style={{ 
             backgroundColor: '#346EF6', 
             color: '#ffffff', 
             padding: '0.6rem 1.25rem', 
@@ -52,7 +52,7 @@ Better care through intelligent technology.
       {/* Portal Entry Points */}
       <section className="lp-cards-grid">
         {/* Doctor Portal */}
-        <Link href="/doctor" className="lp-card lp-card-dr">
+        <Link href="/doctor/login" className="lp-card lp-card-dr">
           <div className="lp-icon-box">
             <span className="material-symbols-outlined" style={{ color: '#346EF6', fontSize: '32px' }}>stethoscope</span>
           </div>
